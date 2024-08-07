@@ -38,6 +38,7 @@ extern "C" {
 #define HTTP_SERVER_MAX_STREAMS          CONFIG_HTTP_SERVER_MAX_STREAMS
 #define HTTP_SERVER_MAX_CONTENT_TYPE_LEN CONFIG_HTTP_SERVER_MAX_CONTENT_TYPE_LENGTH
 #define HTTP_SERVER_MAX_URL_LENGTH       CONFIG_HTTP_SERVER_MAX_URL_LENGTH
+#define HTTP_SERVER_MAX_CUSTOM_HDR_LEN   CONFIG_HTTP_SERVER_MAX_CUSTOM_HEADER_LENGTH
 #else
 #define HTTP_SERVER_CLIENT_BUFFER_SIZE   0
 #define HTTP_SERVER_MAX_STREAMS          0
@@ -93,6 +94,9 @@ struct http_resource_detail {
 
 	/** Content type of the resource. */
 	const char *content_type;
+
+	/** Custom response headers. */
+	const char *custom_response_headers;
 };
 
 /** @cond INTERNAL_HIDDEN */

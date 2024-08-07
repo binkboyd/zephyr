@@ -95,23 +95,28 @@ static int handle_http1_static_resource(
 #define RESPONSE_TEMPLATE_CHUNKED			\
 	"HTTP/1.1 200 OK\r\n"				\
 	"%s%s\r\n"					\
+	"%s"					\
 	"Transfer-Encoding: chunked\r\n\r\n"
 
 #define RESPONSE_TEMPLATE_DYNAMIC			\
 	"HTTP/1.1 200 OK\r\n"				\
+	"%s"                                \
 	"%s%s\r\n\r\n"
 
-#define SEND_RESPONSE(_template, _content_type)	({			\
+#define SEND_RESPONSE(_template, _content_type, _custom_headers)	({			\
 	char http_response[sizeof(_template) +				\
 			   sizeof("Content-Type: \r\n") +		\
 			   HTTP_SERVER_MAX_CONTENT_TYPE_LEN +		\
+			   HTTP_SERVER_MAX_CUSTOM_HDR_LEN +             \
 			   sizeof("xxxx") +				\
 			   sizeof("\r\n")];				\
 	snprintk(http_response, sizeof(http_response),			\
 		 _template,						\
 		 "Content-Type: ",					\
 		 _content_type == NULL ?				\
-		 "text/html" : _content_type);				\
+		 "text/html" : _content_type, \
+		 _custom_headers == NULL ? \
+		 "" : _custom_headers);				\
 	ret = http_server_sendall(client, http_response,		\
 				  strnlen(http_response,		\
 					  sizeof(http_response) - 1));	\
@@ -126,7 +131,8 @@ static int dynamic_get_req(struct http_resource_detail_dynamic *dynamic_detail,
 	char tmp[TEMP_BUF_LEN];
 
 	ret = SEND_RESPONSE(RESPONSE_TEMPLATE_CHUNKED,
-			    dynamic_detail->common.content_type);
+			    dynamic_detail->common.content_type,
+				dynamic_detail->common.custom_response_headers);
 	if (ret < 0) {
 		return ret;
 	}
@@ -204,7 +210,8 @@ static int dynamic_post_req(struct http_resource_detail_dynamic *dynamic_detail,
 
 	if (!client->http1_headers_sent) {
 		ret = SEND_RESPONSE(RESPONSE_TEMPLATE_CHUNKED,
-				    dynamic_detail->common.content_type);
+				    dynamic_detail->common.content_type,
+					dynamic_detail->common.custom_response_headers);
 		if (ret < 0) {
 			return ret;
 		}
@@ -394,7 +401,8 @@ static int handle_http1_dynamic_resource(
 	case HTTP_HEAD:
 		if (user_method & BIT(HTTP_HEAD)) {
 			ret = SEND_RESPONSE(RESPONSE_TEMPLATE_DYNAMIC,
-					    dynamic_detail->common.content_type);
+					    dynamic_detail->common.content_type,
+						dynamic_detail->common.custom_response_headers);
 			if (ret < 0) {
 				return ret;
 			}

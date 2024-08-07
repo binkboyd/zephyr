@@ -96,6 +96,13 @@ config HTTP_SERVER_MAX_CONTENT_TYPE_LENGTH
 	help
 	  This setting determines the maximum length of the HTTP Content-Length field.
 
+config HTTP_SERVER_MAX_CUSTOM_HEADER_LENGTH
+	int "Maximum HTTP Custom response header Length"
+	default 64
+	range 1 128
+	help
+		This setting determines the maximum length of the custom HTTP response headers.
+
 config HTTP_SERVER_CLIENT_INACTIVITY_TIMEOUT
 	int "Client inactivity timeout (seconds)"
 	default 10
